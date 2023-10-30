@@ -2,22 +2,31 @@ import { SubscriberRepository } from '@novu/dal';
 import { UserSession, SubscribersService } from '@novu/testing';
 import { Test } from '@nestjs/testing';
 
-import { CacheService, InvalidateCacheService } from '../../services/cache';
 import { UpdateSubscriber } from './update-subscriber.usecase';
 import { UpdateSubscriberCommand } from './update-subscriber.command';
-import { InMemoryProviderService } from '../../services';
+import {
+  CacheService,
+  InvalidateCacheService,
+  InMemoryProviderService,
+  InMemoryProviderEnum,
+} from '../../services';
 
 const inMemoryProviderService = {
   provide: InMemoryProviderService,
-  useFactory: () => {
-    return new InMemoryProviderService();
+  useFactory: async (): Promise<InMemoryProviderService> => {
+    const inMemoryProvider = new InMemoryProviderService(
+      InMemoryProviderEnum.REDIS
+    );
+
+    return inMemoryProvider;
   },
 };
 
 const cacheService = {
   provide: CacheService,
-  useFactory: () => {
-    const factoryInMemoryProviderService = inMemoryProviderService.useFactory();
+  useFactory: async () => {
+    const factoryInMemoryProviderService =
+      await inMemoryProviderService.useFactory();
 
     return new CacheService(factoryInMemoryProviderService);
   },
@@ -55,9 +64,10 @@ describe('Update Subscriber', function () {
       })
     );
 
-    const updatedSubscriber = await subscriberRepository.findById(
-      subscriber._id
-    );
+    const updatedSubscriber = await subscriberRepository.findOne({
+      _id: subscriber._id,
+      _environmentId: subscriber._environmentId,
+    });
     expect(updatedSubscriber.lastName).toEqual('Test Last Name');
     expect(updatedSubscriber.firstName).toEqual(subscriber.firstName);
     expect(updatedSubscriber.email).toEqual(subscriber.email);

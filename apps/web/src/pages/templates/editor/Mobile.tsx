@@ -1,11 +1,11 @@
 import { createStyles } from '@mantine/core';
-import { colors } from '../../../design-system';
+import { colors } from '@novu/design-system';
 
 const useStyles = createStyles((theme) => ({
   phone: {
     display: 'block',
     margin: 'auto',
-    width: '390px',
+    width: '400px',
     height: '740px',
     position: 'relative',
     borderColor: theme.colorScheme === 'dark' ? colors.B20 : colors.B85,

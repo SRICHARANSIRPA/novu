@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { ChannelCTATypeEnum, ChannelTypeEnum } from '@novu/shared';
+import { ChannelCTATypeEnum, EmailBlockTypeEnum, StepTypeEnum, TemplateVariableTypeEnum } from '@novu/shared';
 import {
   MessageTemplateRepository,
   NotificationGroupRepository,
@@ -12,7 +12,7 @@ import {
 import { CreateTemplatePayload } from './create-notification-template.interface';
 
 export class NotificationTemplateService {
-  constructor(private userId: string, private organizationId: string | undefined, private environmentId: string) {}
+  constructor(private userId: string, private organizationId: string, private environmentId: string) {}
 
   private notificationTemplateRepository = new NotificationTemplateRepository();
   private notificationGroupRepository = new NotificationGroupRepository();
@@ -31,10 +31,9 @@ export class NotificationTemplateService {
       _environmentId: this.environmentId,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const steps: any[] = override?.steps ?? [
+    const steps: CreateTemplatePayload['steps'] = override?.steps ?? [
       {
-        type: ChannelTypeEnum.IN_APP,
+        type: StepTypeEnum.IN_APP,
         content: 'Test content for <b>{{firstName}}</b>',
         cta: {
           type: ChannelCTATypeEnum.REDIRECT,
@@ -47,20 +46,20 @@ export class NotificationTemplateService {
             defaultValue: '',
             name: 'firstName',
             required: false,
-            type: 'String',
+            type: TemplateVariableTypeEnum.STRING,
           },
         ],
       },
       {
-        type: ChannelTypeEnum.EMAIL,
+        type: StepTypeEnum.EMAIL,
         subject: 'Password reset',
         content: [
           {
-            type: 'text',
+            type: EmailBlockTypeEnum.TEXT,
             content: 'This are the text contents of the template for {{firstName}}',
           },
           {
-            type: 'button',
+            type: EmailBlockTypeEnum.BUTTON,
             content: 'SIGN UP',
             url: 'https://url-of-app.com/{{urlVariable}}',
           },
@@ -70,7 +69,7 @@ export class NotificationTemplateService {
             defaultValue: '',
             name: 'firstName',
             required: false,
-            type: 'String',
+            type: TemplateVariableTypeEnum.STRING,
           },
         ],
       },
@@ -87,6 +86,7 @@ export class NotificationTemplateService {
         subject: message.subject,
         title: message.title,
         name: message.name,
+        actor: message.actor,
         _feedId: override.noFeedId ? undefined : feeds[0]._id,
         _layoutId: override.noLayoutId ? undefined : layouts[0]._id,
         _creatorId: this.userId,
@@ -94,14 +94,16 @@ export class NotificationTemplateService {
         _environmentId: this.environmentId,
       });
 
-      templateSteps.push({
-        filters: message.filters,
-        _templateId: saved._id,
-        active: message.active,
-        metadata: message.metadata,
-        replyCallback: message.replyCallback,
-        uuid: message.uuid,
-      });
+      if (saved?._id) {
+        templateSteps.push({
+          filters: message.filters,
+          _templateId: saved._id,
+          active: message.active,
+          metadata: message.metadata as any,
+          replyCallback: message.replyCallback,
+          uuid: message.uuid,
+        });
+      }
     }
 
     const data = {
@@ -134,17 +136,12 @@ export class NotificationTemplateService {
     );
   }
 
-  async countTemplates() {
-    return await this.notificationTemplateRepository.count({
-      _organizationId: this.organizationId,
-      _environmentId: this.environmentId,
-    });
-  }
+  async getBlueprintTemplates(organizationId: string, environmentId: string): Promise<NotificationTemplateEntity[]> {
+    const blueprintTemplates = await this.notificationTemplateRepository.findBlueprintTemplates(
+      organizationId,
+      environmentId
+    );
 
-  async getTemplates() {
-    return await this.notificationTemplateRepository.find({
-      _organizationId: this.organizationId,
-      _environmentId: this.environmentId,
-    });
+    return blueprintTemplates;
   }
 }

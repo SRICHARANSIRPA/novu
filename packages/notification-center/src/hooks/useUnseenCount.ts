@@ -1,11 +1,15 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
 import debounce from 'lodash.debounce';
+import { WebSocketEventEnum } from '@novu/shared';
 
 import type { ICountData } from '../shared/interfaces';
-import { FEED_UNSEEN_COUNT_QUERY_KEY, INFINITE_NOTIFICATIONS_QUERY_KEY, UNSEEN_COUNT_QUERY_KEY } from './queryKeys';
 import { useNovuContext } from './useNovuContext';
 import { useSetQueryKey } from './useSetQueryKey';
+import { useFetchNotificationsQueryKey } from './useFetchNotificationsQueryKey';
+import { useUnseenCountQueryKey } from './useUnseenCountQueryKey';
+import { useDataRef } from './useDataRef';
+import { FEED_UNSEEN_COUNT_QUERY_KEY } from './queryKeys';
 
 const dispatchUnseenCountEvent = (count: number) => {
   document.dispatchEvent(new CustomEvent('novu:unseen_count_changed', { detail: count }));
@@ -21,10 +25,13 @@ const dispatchUnseenCountEvent = (count: number) => {
 const DEBOUNCE_TIME = typeof window !== 'undefined' && (window as any)?.Cypress ? 1000 : 100;
 
 export const useUnseenCount = ({ onSuccess, ...restOptions }: UseQueryOptions<ICountData, Error, ICountData> = {}) => {
-  const { apiService, socket, isSessionInitialized, fetchingStrategy, subscriberId } = useNovuContext();
+  const { apiService, socket, isSessionInitialized, fetchingStrategy } = useNovuContext();
 
   const queryClient = useQueryClient();
   const setQueryKey = useSetQueryKey();
+  const fetchNotificationsQueryKey = useFetchNotificationsQueryKey();
+  const unseenCountQueryKey = useUnseenCountQueryKey();
+  const queryKeysRef = useDataRef({ fetchNotificationsQueryKey, unseenCountQueryKey });
 
   useEffect(() => {
     if (!socket) {
@@ -32,20 +39,18 @@ export const useUnseenCount = ({ onSuccess, ...restOptions }: UseQueryOptions<IC
     }
 
     socket.on(
-      'unseen_count_changed',
+      WebSocketEventEnum.UNSEEN,
       debounce((data?: { unseenCount: number }) => {
         if (Number.isInteger(data?.unseenCount)) {
-          queryClient.setQueryData<{ count: number }>(setQueryKey(UNSEEN_COUNT_QUERY_KEY), (oldData) => ({
+          queryClient.setQueryData<{ count: number }>(unseenCountQueryKey, (oldData) => ({
             count: data?.unseenCount ?? oldData.count,
           }));
 
-          queryClient.refetchQueries(UNSEEN_COUNT_QUERY_KEY, {
+          queryClient.refetchQueries(queryKeysRef.current.fetchNotificationsQueryKey, {
             exact: false,
           });
-          queryClient.refetchQueries(INFINITE_NOTIFICATIONS_QUERY_KEY, {
-            exact: false,
-          });
-          queryClient.refetchQueries([...FEED_UNSEEN_COUNT_QUERY_KEY, subscriberId], {
+          // refetch all feeds unseen count that is shown on the tabs
+          queryClient.refetchQueries([...FEED_UNSEEN_COUNT_QUERY_KEY], {
             exact: false,
           });
 
@@ -55,12 +60,12 @@ export const useUnseenCount = ({ onSuccess, ...restOptions }: UseQueryOptions<IC
     );
 
     return () => {
-      socket.off('unseen_count_changed');
+      socket.off(WebSocketEventEnum.UNSEEN);
     };
   }, [socket, queryClient, setQueryKey]);
 
   const result = useQuery<ICountData, Error, ICountData>(
-    setQueryKey(UNSEEN_COUNT_QUERY_KEY),
+    unseenCountQueryKey,
     () => apiService.getUnseenCount({ limit: 100 }),
     {
       ...restOptions,

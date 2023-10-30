@@ -6,8 +6,7 @@ import type { IEmailBlock, MessageTemplateContentType } from '@novu/shared';
 
 import { previewEmail } from '../../../api/content-templates';
 import { When } from '../../../components/utils/When';
-import { Button, colors } from '../../../design-system';
-import { inputStyles } from '../../../design-system/config/inputs.styles';
+import { Button, colors, inputStyles } from '@novu/design-system';
 import { useProcessVariables } from '../../../hooks';
 import { PreviewMobile } from './PreviewMobile';
 import { PreviewWeb } from './PreviewWeb';
@@ -84,6 +83,7 @@ export const Preview = ({ activeStep, view }: { activeStep: number; view: string
       payload: processedVariables,
       layoutId,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentType, htmlContent, editorContent, processedVariables]);
   const theme = useMantineTheme();
 
@@ -91,7 +91,7 @@ export const Preview = ({ activeStep, view }: { activeStep: number; view: string
     if (integrations.length === 0) {
       return;
     }
-    setIntegration(integrations.find((item) => item.channel === 'email') || null);
+    setIntegration(integrations.find((item) => item.channel === 'email' && item.primary) || null);
   }, [integrations, setIntegration]);
 
   return (

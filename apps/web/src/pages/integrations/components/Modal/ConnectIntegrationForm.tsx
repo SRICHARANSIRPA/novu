@@ -9,6 +9,7 @@ import {
   ChatProviderIdEnum,
   CredentialsKeyEnum,
   IConfigCredentials,
+  ICreateIntegrationBodyDto,
   ICredentialsDto,
   IEnvironment,
   IOrganizationEntity,
@@ -17,13 +18,11 @@ import {
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
 
-import { Button, colors, Input, shadows, Switch, Text } from '../../../../design-system';
-import { IIntegratedProvider } from '../../IntegrationsStorePage';
+import { Button, colors, Input, shadows, Switch, Text, Close, Check, Copy } from '@novu/design-system';
+import type { IIntegratedProvider } from '../../types';
 import { createIntegration, getWebhookSupportStatus, updateIntegration } from '../../../../api/integration';
-import { Close } from '../../../../design-system/icons/actions/Close';
 import { IntegrationInput } from '../IntegrationInput';
 import { API_ROOT, CONTEXT_PATH } from '../../../../config';
-import { Check, Copy } from '../../../../design-system/icons';
 import { successMessage } from '../../../../utils/notifications';
 import { QueryKeys } from '../../../../api/query.keys';
 import { useSegment } from '../../../../components/providers/SegmentProvider';
@@ -114,7 +113,7 @@ export function ConnectIntegrationForm({
   onSuccessFormSubmit,
   onClose,
 }: {
-  provider: IIntegratedProvider | null;
+  provider: IIntegratedProvider;
   organization?: IOrganizationEntity;
   environment?: IEnvironment;
   createModel: boolean;
@@ -143,13 +142,7 @@ export function ConnectIntegrationForm({
   const { mutateAsync: createIntegrationApi, isLoading: isLoadingCreate } = useMutation<
     { res: string },
     { error: string; message: string; statusCode: number },
-    {
-      providerId: string;
-      channel: ChannelTypeEnum | null;
-      credentials: ICredentialsDto;
-      active: boolean;
-      check: boolean;
-    }
+    ICreateIntegrationBodyDto
   >(createIntegration);
 
   const { mutateAsync: updateIntegrationApi, isLoading: isLoadingUpdate } = useMutation<
@@ -186,7 +179,7 @@ export function ConnectIntegrationForm({
         },
       });
     }
-  }, [provider]);
+  }, [setValue, provider]);
 
   async function onCreateIntegration(credentials: ICredentialsDto) {
     try {
@@ -202,7 +195,7 @@ export function ConnectIntegrationForm({
       if (createModel) {
         await createIntegrationApi({
           providerId: provider?.providerId ? provider?.providerId : '',
-          channel: provider?.channel ? provider?.channel : null,
+          channel: provider?.channel,
           credentials,
           active: isActive,
           check,
@@ -227,7 +220,7 @@ export function ConnectIntegrationForm({
       }
       await queryClient.refetchQueries({
         predicate: ({ queryKey }) =>
-          queryKey.includes(QueryKeys.integrationsList) || queryKey.includes(QueryKeys.activeNotificationsList),
+          queryKey.includes(QueryKeys.integrationsList) || queryKey.includes(QueryKeys.activeIntegrations),
       });
     } catch (e: any) {
       dispatch({
@@ -339,7 +332,13 @@ export function ConnectIntegrationForm({
               />
             </InputWrapper>
           )}
-        <ShareableUrl provider={provider?.providerId} control={control} />
+        <ShareableUrl
+          provider={provider?.providerId}
+          hmacEnabled={useWatch({
+            control,
+            name: CredentialsKeyEnum.Hmac,
+          })}
+        />
 
         <Stack my={20}>
           <ActiveWrapper active={isActive}>
@@ -496,24 +495,22 @@ const CenterDiv = styled.div`
 
 export function ShareableUrl({
   provider,
-  control,
+  hmacEnabled,
 }: {
   provider: ProvidersIdEnum | undefined;
-  control: Control<FieldValues, any>;
+  hmacEnabled: boolean;
 }) {
   const { environment } = useEnvController();
-  const hmacEnabled = useWatch({
-    control,
-    name: CredentialsKeyEnum.Hmac,
-  });
+
   const oauthUrlClipboard = useClipboard({ timeout: 1000 });
   const display = provider === ChatProviderIdEnum.Slack;
 
   const subscriberId = '<SUBSCRIBER_ID>';
   const environmentId = `environmentId=${environment?._id}`;
+  const integrationIdentifier = `&integrationIdentifier=<INTEGRATION_IDENTIFIER>`;
   const hmac = hmacEnabled ? '&hmacHash=<HMAC_HASH>' : '';
 
-  const oauthUrl = `${API_ROOT}/v1/subscribers/${subscriberId}/credentials/slack/oauth?${environmentId}${hmac}`;
+  const oauthUrl = `${API_ROOT}/v1/subscribers/${subscriberId}/credentials/slack/oauth?${environmentId}${integrationIdentifier}${hmac}`;
 
   return (
     <When truthy={display}>

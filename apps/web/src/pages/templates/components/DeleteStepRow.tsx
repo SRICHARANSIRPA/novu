@@ -1,9 +1,8 @@
 import { StepTypeEnum } from '@novu/shared';
 import { useEnvController } from '../../../hooks';
 import { useOutletContext, useParams } from 'react-router-dom';
-import { Button, colors } from '../../../design-system';
+import { Button, colors, Trash } from '@novu/design-system';
 import styled from '@emotion/styled';
-import { Trash } from '../../../design-system/icons';
 import { Group } from '@mantine/core';
 import { When } from '../../../components/utils/When';
 
@@ -20,15 +19,7 @@ export const DeleteStepRow = () => {
   }
 
   return (
-    <Group
-      position="apart"
-      sx={{
-        position: 'absolute',
-        bottom: 24,
-        left: 24,
-        right: 24,
-      }}
-    >
+    <Group position="apart" mt={'auto'}>
       <When truthy={![StepTypeEnum.DELAY, StepTypeEnum.DIGEST].includes(channel)}>
         <div />
       </When>
@@ -37,7 +28,7 @@ export const DeleteStepRow = () => {
           target={'_blank'}
           style={{ color: 'rgb(221, 36, 118)', textDecoration: 'underline', fontSize: '18px' }}
           rel="noopener noreferrer"
-          href={'https://docs.novu.co/platform/digest'}
+          href={'https://docs.novu.co/workflows/digest'}
         >
           Learn more in the docs
         </a>
@@ -47,7 +38,7 @@ export const DeleteStepRow = () => {
           target={'_blank'}
           style={{ color: 'rgb(221, 36, 118)', textDecoration: 'underline', fontSize: '18px' }}
           rel="noopener noreferrer"
-          href={'https://docs.novu.co/platform/delay'}
+          href={'https://docs.novu.co/workflows/delay-action'}
         >
           Learn more in the docs
         </a>

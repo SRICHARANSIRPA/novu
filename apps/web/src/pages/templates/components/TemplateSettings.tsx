@@ -3,9 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Group } from '@mantine/core';
 import styled from '@emotion/styled';
 
-import { Button, colors } from '../../../design-system';
+import { Button, colors, Trash } from '@novu/design-system';
 import { NotificationSettingsForm } from './notification-setting-form/NotificationSettingsForm';
-import { Trash } from '../../../design-system/icons';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { useEnvController } from '../../../hooks';
 import { useTemplateEditorForm } from './TemplateEditorFormProvider';
@@ -56,10 +55,8 @@ export const TemplateSettings = () => {
     <SubPageWrapper title="Workflow Settings">
       <WorkflowSettingsTabs />
       <NotificationSettingsForm trigger={trigger} />
-
-      <Group position="right">
+      <Group position="right" mt={'auto'}>
         <DeleteNotificationButton
-          mt={48}
           variant="outline"
           disabled={readonly}
           data-test-id="delete-notification-button"

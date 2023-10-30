@@ -3,16 +3,24 @@ import * as sinon from 'sinon';
 
 import { UserSession } from '@novu/testing';
 import { NotificationTemplateRepository, EnvironmentRepository } from '@novu/dal';
-import { EmailBlockTypeEnum, FilterPartTypeEnum, INotificationTemplate, StepTypeEnum } from '@novu/shared';
+import {
+  EmailBlockTypeEnum,
+  FieldLogicalOperatorEnum,
+  FieldOperatorEnum,
+  FilterPartTypeEnum,
+  INotificationTemplate,
+  StepTypeEnum,
+} from '@novu/shared';
 import {
   buildGroupedBlueprintsKey,
   CacheService,
+  InMemoryProviderEnum,
   InMemoryProviderService,
   InvalidateCacheService,
 } from '@novu/application-generic';
 
 import { GroupedBlueprintResponse } from '../dto/grouped-blueprint.response.dto';
-import { CreateNotificationTemplateRequestDto } from '../../notification-template/dto';
+import { CreateWorkflowRequestDto } from '../../workflows/dto';
 import { GetGroupedBlueprints, POPULAR_TEMPLATES_ID_LIST } from '../usecases/get-grouped-blueprints';
 import * as blueprintStaticModule from '../usecases/get-grouped-blueprints/consts';
 
@@ -21,13 +29,16 @@ describe('Get grouped notification template blueprints - /blueprints/group-by-ca
   const notificationTemplateRepository: NotificationTemplateRepository = new NotificationTemplateRepository();
   const environmentRepository: EnvironmentRepository = new EnvironmentRepository();
 
-  const inMemoryProviderService = new InMemoryProviderService();
-  const invalidateCache = new InvalidateCacheService(new CacheService(inMemoryProviderService));
-
+  let invalidateCache: InvalidateCacheService;
   let getGroupedBlueprints: GetGroupedBlueprints;
   let indexModuleStub: sinon.SinonStub;
 
   before(async () => {
+    const inMemoryProviderService = new InMemoryProviderService(InMemoryProviderEnum.REDIS);
+    const cacheService = new CacheService(inMemoryProviderService);
+    await cacheService.initialize();
+    invalidateCache = new InvalidateCacheService(cacheService);
+
     session = new UserSession();
     await session.initialize();
 
@@ -131,7 +142,7 @@ describe('Get grouped notification template blueprints - /blueprints/group-by-ca
       .send({ name: categoryName });
 
     await session.testAgent
-      .post(`/v1/notification-templates`)
+      .post(`/v1/workflows`)
       .send({ notificationGroupId: notificationGroupsResult.data._id, name: 'test email template', steps: [] });
 
     await session.applyChanges({
@@ -155,7 +166,7 @@ export async function createTemplateFromBlueprint({
   notificationTemplateRepository: NotificationTemplateRepository;
   prodEnv;
 }) {
-  const testTemplateRequestDto: Partial<CreateNotificationTemplateRequestDto> = {
+  const testTemplateRequestDto: Partial<CreateWorkflowRequestDto> = {
     name: 'test email template',
     description: 'This is a test description',
     tags: ['test-tag'],
@@ -173,13 +184,13 @@ export async function createTemplateFromBlueprint({
           {
             isNegated: false,
             type: 'GROUP',
-            value: 'AND',
+            value: FieldLogicalOperatorEnum.AND,
             children: [
               {
                 on: FilterPartTypeEnum.SUBSCRIBER,
                 field: 'firstName',
                 value: 'test value',
-                operator: 'EQUAL',
+                operator: FieldOperatorEnum.EQUAL,
               },
             ],
           },
@@ -188,14 +199,12 @@ export async function createTemplateFromBlueprint({
     ],
   };
 
-  const testTemplate = (await session.testAgent.post(`/v1/notification-templates`).send(testTemplateRequestDto)).body
-    .data;
+  const testTemplate = (await session.testAgent.post(`/v1/workflows`).send(testTemplateRequestDto)).body.data;
 
   process.env.BLUEPRINT_CREATOR = session.organization._id;
 
-  const testEnvBlueprintTemplate = (
-    await session.testAgent.post(`/v1/notification-templates`).send(testTemplateRequestDto)
-  ).body.data;
+  const testEnvBlueprintTemplate = (await session.testAgent.post(`/v1/workflows`).send(testTemplateRequestDto)).body
+    .data;
 
   expect(testEnvBlueprintTemplate).to.be.ok;
 
@@ -219,7 +228,7 @@ export async function createTemplateFromBlueprint({
   blueprint.notificationGroupId = blueprint._notificationGroupId;
   blueprint.blueprintId = blueprint._id;
 
-  const createdTemplate = (await session.testAgent.post(`/v1/notification-templates`).send({ ...blueprint })).body.data;
+  const createdTemplate = (await session.testAgent.post(`/v1/workflows`).send({ ...blueprint })).body.data;
 
   return {
     testTemplateRequestDto,

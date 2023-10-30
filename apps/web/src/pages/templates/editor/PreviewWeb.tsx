@@ -1,6 +1,6 @@
 import { Center, createStyles, Group, Loader } from '@mantine/core';
 import { format } from 'date-fns';
-import { colors } from '../../../design-system';
+import { colors } from '@novu/design-system';
 import { PreviewDateIcon } from './PreviewDateIcon';
 import { PreviewUserIcon } from './PreviewUserIcon';
 import Frame from 'react-frame-component';
@@ -65,9 +65,6 @@ const useStyles = createStyles((theme) => ({
     height: '100%',
     padding: '15px',
     textAlign: 'center',
-  },
-  bottom: {
-    height: '30px',
   },
 }));
 
@@ -163,7 +160,6 @@ export const PreviewWeb = ({
           </div>
         </When>
       </div>
-      <div className={classes.bottom}></div>
     </>
   );
 };

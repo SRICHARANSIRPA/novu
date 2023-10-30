@@ -1,7 +1,7 @@
 import { Center, createStyles, Group, Loader } from '@mantine/core';
 import { format } from 'date-fns';
 import Frame from 'react-frame-component';
-import { colors } from '../../../design-system';
+import { colors } from '@novu/design-system';
 import { PreviewDateIcon } from './PreviewDateIcon';
 import { PreviewUserIcon } from './PreviewUserIcon';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -49,9 +49,6 @@ const useStyles = createStyles((theme) => ({
     borderRadius: '0 0 30px 30px',
     padding: '15px',
     textAlign: 'center',
-  },
-  bottom: {
-    height: '30px',
   },
 }));
 
@@ -135,7 +132,6 @@ export const PreviewMobile = ({
           </ErrorBoundary>
         </When>
       </Mobile>
-      <div className={classes.bottom}></div>
     </>
   );
 };

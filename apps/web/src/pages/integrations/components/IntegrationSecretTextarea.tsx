@@ -3,7 +3,7 @@ import { Grid, UnstyledButton } from '@mantine/core';
 import { IConfigCredentials } from '@novu/shared';
 import { useState } from 'react';
 import { When } from '../../../components/utils/When';
-import { Textarea } from '../../../design-system';
+import { Textarea } from '@novu/design-system';
 
 export const IntegrationSecretTextarea = ({
   credential,
@@ -14,7 +14,7 @@ export const IntegrationSecretTextarea = ({
   credential: IConfigCredentials;
   errors: any;
   field: any;
-  register: any;
+  register?: any;
 }) => {
   const [hidden, setHidden] = useState(true);
 
@@ -41,7 +41,7 @@ export const IntegrationSecretTextarea = ({
             data-test-id={credential.key}
             error={errors[credential.key]?.message}
             {...field}
-            {...register(credential.key, {
+            {...register?.(credential.key, {
               required: credential.required && `Please enter a ${credential.displayName.toLowerCase()}`,
             })}
           />

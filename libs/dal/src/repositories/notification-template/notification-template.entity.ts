@@ -4,16 +4,19 @@ import {
   BuilderFieldType,
   BuilderGroupValues,
   IPreferenceChannels,
-  INotificationTemplateStepMetadata,
-  TemplateVariableTypeEnum,
-  DaysEnum,
+  IWorkflowStepMetadata,
+  NotificationTemplateCustomData,
+  INotificationTrigger,
+  TriggerTypeEnum,
+  INotificationTriggerVariable,
+  ITriggerReservedVariable,
 } from '@novu/shared';
 
 import { MessageTemplateEntity } from '../message-template';
 import { NotificationGroupEntity } from '../notification-group';
 import type { OrganizationId } from '../organization';
 import type { EnvironmentId } from '../environment';
-import type { ChangePropsValueType } from '../../types/helpers';
+import type { ChangePropsValueType } from '../../types';
 
 export class NotificationTemplateEntity {
   _id: string;
@@ -61,6 +64,8 @@ export class NotificationTemplateEntity {
   isBlueprint: boolean;
 
   blueprintId?: string;
+
+  data?: NotificationTemplateCustomData;
 }
 
 export type NotificationTemplateDBModel = ChangePropsValueType<
@@ -70,19 +75,16 @@ export type NotificationTemplateDBModel = ChangePropsValueType<
   _parentId?: Types.ObjectId;
 };
 
-export class NotificationTriggerEntity {
-  type: 'event';
+export class NotificationTriggerEntity implements INotificationTrigger {
+  type: TriggerTypeEnum;
 
   identifier: string;
 
-  variables: {
-    name: string;
-    type: TemplateVariableTypeEnum;
-  }[];
+  variables: INotificationTriggerVariable[];
 
-  subscriberVariables?: {
-    name: string;
-  }[];
+  subscriberVariables?: Pick<INotificationTriggerVariable, 'name'>[];
+
+  reservedVariables?: ITriggerReservedVariable[];
 }
 
 export class NotificationStepEntity {
@@ -107,7 +109,7 @@ export class NotificationStepEntity {
 
   _parentId?: string | null;
 
-  metadata?: INotificationTemplateStepMetadata;
+  metadata?: IWorkflowStepMetadata;
 
   shouldStopOnFail?: boolean;
 }

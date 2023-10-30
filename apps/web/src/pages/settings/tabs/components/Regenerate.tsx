@@ -2,9 +2,10 @@ import { useState } from 'react';
 import styled from '@emotion/styled';
 import { useMutation } from '@tanstack/react-query';
 import { showNotification } from '@mantine/notifications';
+import { Group } from '@mantine/core';
 
 import { ConfirmRegenerationModal } from './ConfirmRegenerationModal';
-import { Button, Text } from '../../../../design-system';
+import { Button, Text } from '@novu/design-system';
 import { regenerateApiKeys } from '../../../../api/environment';
 
 export const Regenerate = ({ fetchApiKeys }: { fetchApiKeys: () => void }) => {
@@ -35,8 +36,7 @@ export const Regenerate = ({ fetchApiKeys }: { fetchApiKeys: () => void }) => {
 
   return (
     <>
-      <div>
-        <Title>Danger Zone</Title>
+      <Group position="right">
         <Button
           mb={20}
           mt={10}
@@ -46,7 +46,7 @@ export const Regenerate = ({ fetchApiKeys }: { fetchApiKeys: () => void }) => {
         >
           Regenerate API Key
         </Button>
-      </div>
+      </Group>
       <ConfirmRegenerationModal isOpen={isModalOpened} cancelAction={cancelAction} confirmAction={confirmAction} />
     </>
   );

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { IUserEntity } from '@novu/shared';
 
-import { colors, shadows, Title, Text, Button } from '../../../design-system';
+import { colors, shadows, Title, Text, Button } from '@novu/design-system';
 import { updateUserOnBoarding } from '../../../api/user';
 import { getBlueprintTemplateById } from '../../../api/notification-templates';
 import { errorMessage } from '../../../utils/notifications';
@@ -40,11 +40,11 @@ export function BlueprintModal() {
   }
 
   const [blueprintId, setBluePrintId] = useState<undefined | string>();
+  const id = localStorage.getItem('blueprintId');
 
   useEffect(() => {
-    const id = localStorage.getItem('blueprintId');
     setBluePrintId(id === null ? undefined : id);
-  }, [localStorage.getItem('blueprintId')]);
+  }, [id]);
 
   const { data: blueprint, isInitialLoading: isBluePrintLoading } = useQuery(
     ['blueprint', blueprintId],

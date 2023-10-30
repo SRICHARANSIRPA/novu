@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { useLocation, useParams } from 'react-router-dom';
 
-import { Popover } from '../../../design-system';
+import { Popover } from '@novu/design-system';
 import {
   guidePreview,
   guidePlayground,
@@ -17,6 +17,7 @@ import { OnBoardingAnalyticsEnum } from '../../../pages/quick-start/consts';
 import { useSegment } from '../../providers/SegmentProvider';
 import { useDigestDemoFlowContext } from './DigestDemoFlowProvider';
 import { NodeStep } from '../../workflow';
+import styled from '@emotion/styled';
 
 const getOpacity = (id: string, hoveredHintId?: string, sequence?: { opacity: number }): number => {
   if (hoveredHintId) {
@@ -70,7 +71,7 @@ export function NodeStepWithPopover({
 
   useEffect(() => {
     setSequence(popoverData.sequence[counter.toString()] as IBeat);
-  }, [counter]);
+  }, [counter, popoverData]);
 
   const onDropdownMouseEnter = () => {
     setHoveredHintId(id);
@@ -89,9 +90,9 @@ export function NodeStepWithPopover({
       transitionDuration={600}
       opacity={getOpacity(id, hoveredHintId, sequence)}
       target={
-        <div>
+        <StyledDiv onMouseEnter={onDropdownMouseEnter} onMouseLeave={onDropdownMouseLeave}>
           <NodeStep Handlers={Handlers} Icon={Icon} data={data} ActionItem={ActionItem} ContentItem={ContentItem} />
-        </div>
+        </StyledDiv>
       }
       title={popoverData.title}
       titleGradient={titleGradient}
@@ -126,3 +127,23 @@ function useCounter() {
 
   return { counter };
 }
+
+const StyledDiv = styled.div`
+  svg {
+    stop:first-of-type {
+      stop-color: #dd2476 !important;
+    }
+    stop:last-child {
+      stop-color: #ff512f !important;
+    }
+  }
+
+  [data-blue-gradient-svg] {
+    stop:first-of-type {
+      stop-color: #4c6dd4 !important;
+    }
+    stop:last-child {
+      stop-color: #66d9e8 !important;
+    }
+  }
+`;

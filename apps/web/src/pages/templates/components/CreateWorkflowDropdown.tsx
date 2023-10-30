@@ -4,18 +4,13 @@ import { faFile } from '@fortawesome/free-regular-svg-icons';
 import { faDiagramNext } from '@fortawesome/free-solid-svg-icons';
 import styled from '@emotion/styled';
 
-import { Button, Dropdown, Popover } from '../../../design-system';
-import { PlusCircle } from '../../../design-system/icons';
+import { Dropdown, PlusButton, Popover } from '@novu/design-system';
 import { IBlueprintTemplate } from '../../../api/types';
 import { useSegment } from '../../../components/providers/SegmentProvider';
 import { TemplateCreationSourceEnum } from '../shared';
-import { useHoverOverTemplate } from '../hooks/useHoverOverTemplate';
+import { useHoverOverItem } from '../../../hooks';
 
 const WIDTH = 172;
-
-const ButtonStyled = styled(Button)`
-  width: ${WIDTH}px;
-`;
 
 const DropdownItemSkeleton = styled(Skeleton)`
   margin-bottom: 4px;
@@ -43,11 +38,11 @@ export const CreateWorkflowDropdown = ({
   onAllTemplatesClick: React.MouseEventHandler<HTMLButtonElement>;
 }) => {
   const segment = useSegment();
-  const { templateId, onMouseEnter, onMouseLeave } = useHoverOverTemplate();
+  const { item: templateId, onMouseEnter, onMouseLeave } = useHoverOverItem<string>();
 
   return (
     <Dropdown
-      position="bottom"
+      position="bottom-start"
       disabled={readonly}
       withArrow={false}
       width={WIDTH}
@@ -56,9 +51,7 @@ export const CreateWorkflowDropdown = ({
       }}
       control={
         <div>
-          <ButtonStyled disabled={readonly} icon={<PlusCircle />} data-test-id="create-workflow-btn">
-            Create Workflow
-          </ButtonStyled>
+          <PlusButton disabled={readonly} label="Add a workflow" data-test-id="create-workflow-btn" />
         </div>
       }
       data-test-id="create-workflow-dropdown"

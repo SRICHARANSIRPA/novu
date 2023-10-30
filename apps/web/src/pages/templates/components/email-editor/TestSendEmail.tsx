@@ -6,12 +6,20 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import styled from '@emotion/styled';
 import { ChannelTypeEnum, MemberStatusEnum } from '@novu/shared';
 
-import { Button, Text, colors, Tooltip } from '../../../../design-system';
 import { errorMessage, successMessage } from '../../../../utils/notifications';
 import { useAuthContext } from '../../../../components/providers/AuthProvider';
-import { ArrowDown, Check, Copy, Invite } from '../../../../design-system/icons';
-import { inputStyles } from '../../../../design-system/config/inputs.styles';
-import useStyles from '../../../../design-system/select/Select.styles';
+import {
+  Button,
+  Text,
+  colors,
+  Tooltip,
+  ArrowDown,
+  Check,
+  Copy,
+  Invite,
+  inputStyles,
+  useSelectStyles,
+} from '@novu/design-system';
 import { getOrganizationMembers } from '../../../../api/organization';
 import { useProcessVariables, useIntegrationLimit } from '../../../../hooks';
 import { testSendEmailMessage } from '../../../../api/notification-templates';
@@ -21,7 +29,7 @@ export function TestSendEmail({ index, isIntegrationActive }: { index: number; i
   const { control } = useFormContext();
 
   const clipboardJson = useClipboard({ timeout: 1000 });
-  const { classes } = useStyles();
+  const { classes } = useSelectStyles();
 
   const { mutateAsync: testSendEmailEvent, isLoading } = useMutation(testSendEmailMessage);
   const template = useWatch({
@@ -72,7 +80,7 @@ export function TestSendEmail({ index, isIntegrationActive }: { index: number; i
 
   return (
     <div>
-      <Text my={30} color={colors.B60}>
+      <Text mb={30} color={colors.B60}>
         Fill in the required variables and send a test to your desired address.
       </Text>
 
@@ -114,7 +122,6 @@ export function TestSendEmail({ index, isIntegrationActive }: { index: number; i
           value={payloadValue}
           onChange={setPayloadValue}
           minRows={12}
-          mb={15}
           validationError="Invalid JSON"
           rightSectionWidth={50}
           rightSectionProps={{ style: { alignItems: 'start', padding: '5px' } }}

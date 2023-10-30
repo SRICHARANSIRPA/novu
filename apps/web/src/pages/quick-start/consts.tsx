@@ -3,8 +3,9 @@ import { Stack } from '@mantine/core';
 import { NavigateFunction } from 'react-router-dom';
 import { ChannelTypeEnum } from '@novu/shared';
 
-import { Bell, Chat, Mail, Mobile, Sms } from '../../design-system/icons';
+import { Bell, Chat, Mail, Mobile, Sms } from '@novu/design-system';
 import { ROUTES } from '../../constants/routes.enum';
+import { WIDGET_EMBED_PATH } from '../../config';
 
 export const onBoardingSubscriberId = 'on-boarding-subscriber-id-123';
 export const inAppSandboxSubscriberId = 'in-app-sandbox-subscriber-id-123';
@@ -18,9 +19,9 @@ export const BACKEND_SOCKET_URL = '<BACKEND_SOCKET_URL>';
 export const setupProject = `cd notification-center-demo && npm run setup:onboarding -- ${APPLICATION_IDENTIFIER} ${API_KEY} ${BACKEND_API_URL} ${BACKEND_SOCKET_URL}`;
 export const npmRunCommand = 'npm run dev';
 export const frameworkSetupTitle = 'Choose your go-to framework';
-export const faqUrl = 'https://docs.novu.co/notification-center/FAQ';
-export const notificationCenterDocsUrl = 'https://docs.novu.co/notification-center/getting-started';
-export const discordInviteUrl = 'https://discord.novu.co';
+export const faqUrl = 'https://docs.novu.co/notification-center/introduction';
+export const notificationCenterDocsUrl = 'https://docs.novu.co/notification-center/introduction';
+export const discordInviteUrl = 'https://discord.gg/novu';
 export const demoSetupSecondaryTitle = 'Follow the installation steps to connect your app';
 
 export const getStartedSteps = { first: ROUTES.GET_STARTED, second: ROUTES.GET_STARTED_PREVIEW };
@@ -140,7 +141,7 @@ const embedScript = `<script>
     n[i] = {}; var m = ['init', 'on']; n[i]._c = [];m.forEach(me => n[i][me] = function() {n[i]._c.push([me, arguments])});
     var elt = o.createElement(f); elt.type = "text/javascript"; elt.async = true; elt.src = t;
     var before = o.getElementsByTagName(f)[0]; before.parentNode.insertBefore(elt, before);
-  })(window, document, 'http://localhost:4701/embed.umd.min.js', 'novu', 'script');
+  })(window, document, '${WIDGET_EMBED_PATH}', 'novu', 'script');
 
   novu.init('${APPLICATION_IDENTIFIER}', '#notification-bell', {
     subscriberId: "${onBoardingSubscriberId}",

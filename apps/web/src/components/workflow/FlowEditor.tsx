@@ -20,7 +20,7 @@ import { v4 as uuid4 } from 'uuid';
 import cloneDeep from 'lodash.clonedeep';
 import { StepTypeEnum } from '@novu/shared';
 
-import { colors } from '../../design-system';
+import { colors } from '@novu/design-system';
 import { getChannel } from '../../utils/channels';
 import { useEnvController } from '../../hooks';
 import type { IEdge, IFlowStep } from './types';
@@ -88,7 +88,6 @@ export function FlowEditor({
   const [edges, setEdges, onEdgesChange] = useEdgesState<IEdge>([]);
   const reactFlowInstance = useReactFlow();
   const { readonly } = useEnvController();
-  const [displayEdgeTimeout, setDisplayEdgeTimeout] = useState<Map<string, NodeJS.Timeout | null>>(new Map());
 
   useEffect(() => {
     const clientWidth = reactFlowWrapper.current?.clientWidth;
@@ -102,6 +101,7 @@ export function FlowEditor({
     setTimeout(() => {
       initializeWorkflowTree();
     }, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steps, dragging, errors, readonly]);
 
   const addNewNode = useCallback(
@@ -116,7 +116,7 @@ export function FlowEditor({
 
       addStep(channel.channelType, newId, nodeIndex);
     },
-    [steps]
+    [addStep, steps]
   );
 
   const onDragOver = useCallback((event) => {
@@ -148,7 +148,7 @@ export function FlowEditor({
 
       addNewNode(parentId, type);
     },
-    [reactFlowInstance, nodes, edges]
+    [addNewNode, reactFlowInstance, nodes, edges]
   );
 
   async function initializeWorkflowTree() {
@@ -206,6 +206,10 @@ export function FlowEditor({
         onDelete,
         uuid: step.uuid,
         name: step.name,
+        content: step.template?.content,
+        htmlContent: step.template?.htmlContent,
+        delayMetadata: step.delayMetadata,
+        digestMetadata: step.digestMetadata,
       },
     };
   }
@@ -240,39 +244,16 @@ export function FlowEditor({
     };
   }
 
-  const handleDisplayAddNodeOnEdge = (edgeId: string) => {
+  const handleMouseEnterEdgeOrNode = (edgeId: string) => {
     const edgeElement = document.getElementById(edgeId);
-
     if (!edgeElement) return;
-    const ADD_NODE_DISPLAY_TIMEOUT = 10000;
+    edgeElement.classList.add('fade');
+  };
 
-    if (isEdgeAddNodeButtonVisible(edgeElement)) {
-      const nodeTimeout = displayEdgeTimeout.get(edgeId);
-
-      if (nodeTimeout) {
-        clearTimeout(nodeTimeout);
-        setDisplayEdgeTimeout(displayEdgeTimeout.set(edgeId, null));
-      }
-    } else {
-      toggleAddNodeButtonOpacity(edgeElement);
-    }
-
-    setDisplayEdgeTimeout(
-      displayEdgeTimeout.set(
-        edgeId,
-        setTimeout(() => {
-          toggleAddNodeButtonOpacity(edgeElement);
-        }, ADD_NODE_DISPLAY_TIMEOUT)
-      )
-    );
-
-    function toggleAddNodeButtonOpacity(target) {
-      target.classList.toggle('fade');
-    }
-
-    function isEdgeAddNodeButtonVisible(element: HTMLElement) {
-      return element?.classList.contains('fade');
-    }
+  const handleMouseLeaveEdgeOrNode = (edgeId: string) => {
+    const edgeElement = document.getElementById(edgeId);
+    if (!edgeElement) return;
+    edgeElement.classList.remove('fade');
   };
 
   return (
@@ -288,14 +269,24 @@ export function FlowEditor({
             onEdgesChange={onEdgesChange}
             onDrop={onDrop}
             onDragOver={onDragOver}
-            onNodeMouseMove={(event, node) => {
+            onNodeMouseEnter={(event, node) => {
               if (!readonly) {
-                handleDisplayAddNodeOnEdge(`edge-button-${node.id}`);
+                handleMouseEnterEdgeOrNode(`edge-button-${node.id}`);
               }
             }}
-            onEdgeMouseMove={(event: ReactMouseEvent, edge: Edge) => {
+            onNodeMouseLeave={(event, node) => {
               if (!readonly) {
-                handleDisplayAddNodeOnEdge(`edge-button-${edge.source}`);
+                handleMouseLeaveEdgeOrNode(`edge-button-${node.id}`);
+              }
+            }}
+            onEdgeMouseEnter={(event: ReactMouseEvent, edge: Edge) => {
+              if (!readonly) {
+                handleMouseEnterEdgeOrNode(`edge-button-${edge.source}`);
+              }
+            }}
+            onEdgeMouseLeave={(event: ReactMouseEvent, edge: Edge) => {
+              if (!readonly) {
+                handleMouseLeaveEdgeOrNode(`edge-button-${edge.source}`);
               }
             }}
             /*
@@ -336,12 +327,29 @@ const Wrapper = styled.div<{ dark: boolean }>`
   background: ${({ dark }) => (dark ? colors.B15 : colors.B98)};
   .react-flow__node.react-flow__node-channelNode,
   .react-flow__node.react-flow__node-triggerNode {
-    width: 200px;
-    height: 75px;
+    width: 280px;
+    height: 80px;
     cursor: pointer;
+
+    [data-blue-gradient-svg] {
+      stop:first-of-type {
+        stop-color: #4c6dd4 !important;
+      }
+      stop:last-child {
+        stop-color: #66d9e8 !important;
+      }
+    }
+
+    [data-workflow-node-icon] {
+      stop {
+        stop-color: white !important;
+      }
+    }
   }
+
   .react-flow__node.react-flow__node-addNode {
-    width: 200px;
+    cursor: default;
+    width: 280px;
   }
   .react-flow__handle.connectable {
     cursor: pointer;
@@ -381,6 +389,15 @@ const Wrapper = styled.div<{ dark: boolean }>`
 
     svg {
       fill: ${colors.B60};
+    }
+  }
+
+  [data-template-store-editor] [data-workflow-node-icon] {
+    stop:first-of-type {
+      stop-color: #dd2476 !important;
+    }
+    stop:last-child {
+      stop-color: #ff512f !important;
     }
   }
 `;

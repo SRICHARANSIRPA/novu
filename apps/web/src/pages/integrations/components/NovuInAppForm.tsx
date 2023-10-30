@@ -4,10 +4,10 @@ import { Title, Text, Grid, Stack, useMantineColorScheme } from '@mantine/core';
 import { useMutation } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { ICredentialsDto } from '@novu/shared';
-import { IIntegratedProvider } from '../IntegrationsStorePage';
+
+import { IIntegratedProvider } from '../types';
 import { updateIntegration } from '../../../api/integration';
-import { Switch, Button, colors } from '../../../design-system';
-import { CircleArrowRight } from '../../../design-system/icons/arrows/CircleArrowRight';
+import { Switch, Button, colors, CircleArrowRight } from '@novu/design-system';
 import { When } from '../../../components/utils/When';
 import { errorMessage, successMessage } from '../../../utils/notifications';
 
@@ -128,9 +128,8 @@ export const NovuInAppForm = ({
             To finish security enabling, follow the step-by-step guide in our docs
           </Text>
           <CircleArrowRightStyled
-            backgroundColor={colors.white}
             onClick={() => {
-              window.open('https://docs.novu.co/notification-center/iframe-embed/#enabling-hmac-encryption');
+              window.open('https://docs.novu.co/notification-center/client/iframe#enabling-hmac-encryption');
             }}
           />
         </WarningMessage>
@@ -194,18 +193,4 @@ const WarningMessage = styled.div`
 
 const CircleArrowRightStyled = styled(CircleArrowRight)`
   cursor: pointer;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  right: 0;
-  top: 0;
-  background: transparent;
-  border: none;
-  color: ${colors.B40};
-  outline: none;
-
-  &:hover {
-    cursor: pointer;
-  }
 `;

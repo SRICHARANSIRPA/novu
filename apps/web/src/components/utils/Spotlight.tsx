@@ -1,7 +1,7 @@
 import { SpotlightProvider } from '@mantine/spotlight';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, Bolt, Box, Settings, Repeat, Team, Brand, Chat } from '../../design-system/icons';
+import { Activity, Bolt, Box, Settings, Repeat, Team, Brand, Chat } from '@novu/design-system';
 import { useSpotlightContext } from '../providers/SpotlightProvider';
 import { ROUTES } from '../../constants/routes.enum';
 
@@ -76,7 +76,7 @@ export const SpotLight = ({ children }) => {
         icon: <Chat />,
       },
     ]);
-  }, []);
+  }, [navigate, addItem]);
 
   return (
     <SpotlightProvider limit={7} shortcut={['mod + K']} actions={items}>

@@ -20,7 +20,7 @@ import { GetEnvironment, GetEnvironmentCommand } from './usecases/get-environmen
 import { GetMyEnvironments } from './usecases/get-my-environments/get-my-environments.usecase';
 import { GetMyEnvironmentsCommand } from './usecases/get-my-environments/get-my-environments.command';
 import { JwtAuthGuard } from '../auth/framework/auth.guard';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiKey } from '../shared/dtos/api-key';
 import { EnvironmentResponseDto } from './dtos/environment-response.dto';
 import { ExternalApiAccessible } from '../auth/framework/external-api.decorator';
@@ -88,6 +88,7 @@ export class EnvironmentsController {
   async getMyEnvironments(@UserSession() user: IJwtPayload): Promise<EnvironmentResponseDto[]> {
     return await this.getMyEnvironmentsUsecase.execute(
       GetMyEnvironmentsCommand.create({
+        environmentId: user.environmentId,
         userId: user._id,
         organizationId: user.organizationId,
       })
@@ -98,6 +99,7 @@ export class EnvironmentsController {
   @ApiOperation({
     summary: 'Update env by id',
   })
+  @ApiExcludeEndpoint()
   @ApiResponse(EnvironmentResponseDto)
   async updateMyEnvironment(
     @UserSession() user: IJwtPayload,
